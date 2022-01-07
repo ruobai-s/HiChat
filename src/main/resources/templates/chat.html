@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="utf-8">
+	<title>在线QQ聊天室</title>
+	<link rel="shortcut icon" href="/favicon.ico">
+	<link rel="stylesheet" th:href="@{/layui/css/layui.css}" />
+</head>
+<body>
+<script th:src="@{/layui/layui.js}"></script>
+<script th:inline="javascript">
+	layui.use(['layim'], function(layim){
+		var id = [[${id}]];
+		var REMOTE_socket = new WebSocket("ws://101.37.174.206:8081/myWs");
+		var socket = new WebSocket('ws://101.37.174.206:8090/send');
+		//console.log('666');
+		  //基础配置
+		REMOTE_socket.onopen = function(){
+			REMOTE_socket.send("login:1747228821");
+		};
+	    layim.config({
+			//页面初始化
+			init: {
+			  url: '/getChatHome?id='+id //接口地址（返回的数据格式见下文）
+			  ,type: 'get' ,//默认get，一般可不填
+			}  ,
+
+		});
+		//监听发送信息
+		layim.on('sendMessage', function(res){
+			console.log(res);
+			// 监听到上述消息后，就可以轻松地发送socket了，如：
+			socket.send(JSON.stringify({
+				type: 'chatMessage' //随便定义，用于在服务端区分消息类型
+				,data: res
+			}));
+		});
+
+		REMOTE_socket.onmessage = function(res){
+			res.emit="chatMessage";
+			var data1=JSON.parse(res.data);
+			if (data1.type==="group"){
+				data1.avatar = "https://q.qlogo.cn/headimg_dl?dst_uin="+data1.fromid+"&spec=100";
+
+			}else{
+				data1.avatar = "https://q.qlogo.cn/headimg_dl?dst_uin="+data1.id+"&spec=100";
+			}
+			data = {username: data1.username,avatar: data1.avatar,id: data1.id,type: data1.type,content: data1.content,mine: false,fromid: data1.fromid,timestamp: parseInt(data1.timestamp)};
+			layim.getMessage(data);
+		}
+	});   	      
+</script>
+<script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+</body>
+</html>

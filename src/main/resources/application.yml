@@ -1,0 +1,14 @@
+server:
+    port: 8090
+spring:
+    thymeleaf:
+        prefix: classpath:/templates/
+        suffix: .html
+    datasource:
+        url: jdbc:mysql://localhost:3306/hichat?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+        username: root
+        password: 123456
+        driver-class-name: com.mysql.cj.jdbc.Driver
+mybatis:
+    mapper-locations: classpath:/mapping/*.xml
+    type-aliases-package: com.ruobai
